@@ -1,9 +1,9 @@
 import streamlit as st
 from supabase import create_client
 
-# 🔑 بيانات Supabase
+# 🔑 Supabase credentials
 url = "https://dpttbbaepbgyaaedingk.supabase.co"
-key = "PUT_YOUR_KEY_HERE"  # حطي المفتاح متاعك هنا
+key = "PUT_YOUR_ANON_KEY_HERE"
 
 supabase = create_client(url, key)
 
