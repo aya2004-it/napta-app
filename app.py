@@ -8,127 +8,107 @@ key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
 # ======================
+# AUTH (بسيط)
+# ======================
+if "user" not in st.session_state:
+    st.session_state["user"] = None
+
+st.sidebar.title("🔐 الدخول")
+
+email = st.sidebar.text_input("Email")
+
+if st.sidebar.button("تسجيل دخول"):
+    st.session_state["user"] = email
+    st.sidebar.success("تم الدخول ✔")
+
+if not st.session_state["user"]:
+    st.warning("يجب تسجيل الدخول أولاً")
+    st.stop()
+
+user_id = st.session_state["user"]
+
+# ======================
 # FUNCTIONS
 # ======================
-
 def add_favorite(plant_id):
-    # منع التكرار (اختياري بسيط)
-    check = supabase.table("favorites").select("*").eq("plant_id", plant_id).execute()
+    check = supabase.table("favorites") \
+        .select("*") \
+        .eq("user_id", user_id) \
+        .eq("plant_id", plant_id) \
+        .execute()
+
     if check.data:
-        st.toast("❤️ موجودة مسبقًا في المفضلة")
+        st.toast("موجودة مسبقًا ❤️")
     else:
-        supabase.table("favorites").insert({"plant_id": plant_id}).execute()
-        st.toast("❤️ تمت الإضافة")
+        supabase.table("favorites").insert({
+            "user_id": user_id,
+            "plant_id": plant_id
+        }).execute()
+        st.toast("تمت الإضافة ❤️")
+
 
 def get_favorites():
-    favs = supabase.table("favorites").select("*").execute().data
+    favs = supabase.table("favorites") \
+        .select("*") \
+        .eq("user_id", user_id) \
+        .execute().data
+
     plant_ids = [f["plant_id"] for f in favs]
 
     if not plant_ids:
         return []
 
-    plants = supabase.table("plants").select("*").in_("id", plant_ids).execute().data
-    return plants
+    return supabase.table("plants") \
+        .select("*") \
+        .in_("id", plant_ids) \
+        .execute().data
 
 
 # ======================
-# SESSION STATE
+# NAV
 # ======================
-if "page" not in st.session_state:
-    st.session_state["page"] = "home"
-
-if "selected" not in st.session_state:
-    st.session_state["selected"] = None
-
+page = st.sidebar.radio("القائمة", ["الرئيسية", "المفضلة"])
 
 # ======================
-# NAVIGATION
+# HOME
 # ======================
-st.sidebar.title("🌿 Napta Menu")
+if page == "الرئيسية":
+    st.title("🌿 نبتاتي")
 
-if st.sidebar.button("🏠 الرئيسية"):
-    st.session_state["page"] = "home"
+    data = supabase.table("plants").select("*").execute().data
 
-if st.sidebar.button("❤️ المفضلة"):
-    st.session_state["page"] = "favorites"
+    cols = st.columns(3)
 
+    for i, plant in enumerate(data):
+        with cols[i % 3]:
+
+            st.markdown(f"### 🌿 {plant['name_ar']}")
+            st.image(plant["image_url"], use_container_width=True)
+
+            st.write("💧", plant["watering"])
+            st.write("🌞", plant["sunlight"])
+
+            if st.button("❤️ مفضلة", key="f_" + plant["id"]):
+                add_favorite(plant["id"])
 
 # ======================
 # FAVORITES PAGE
 # ======================
-if st.session_state["page"] == "favorites":
-    st.title("❤️ النباتات المفضلة")
+if page == "المفضلة":
+    st.title("❤️ مفضلتي")
 
-    favorites = get_favorites()
+    favs = get_favorites()
 
-    if not favorites:
-        st.info("لا توجد نباتات في المفضلة بعد 🌿")
+    if not favs:
+        st.info("لا توجد مفضلات بعد 🌿")
     else:
         cols = st.columns(3)
 
-        for i, plant in enumerate(favorites):
+        for i, plant in enumerate(favs):
             with cols[i % 3]:
 
-                st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
+                st.markdown(f"### 🌿 {plant['name_ar']}")
                 st.image(plant["image_url"], use_container_width=True)
 
                 st.write("💧", plant["watering"])
                 st.write("🌞", plant["sunlight"])
-
-                if st.button("📖 التفاصيل", key="fav_d_" + plant["id"]):
-                    st.session_state["selected"] = plant
-                    st.session_state["page"] = "home"
-                    st.rerun()
-
-    st.stop()
-
-
-# ======================
-# HOME PAGE
-# ======================
-st.title("🌿 نبتاتي - معرض النباتات")
-
-data = supabase.table("plants").select("*").execute().data
-
-cols = st.columns(3)
-
-for i, plant in enumerate(data):
-    with cols[i % 3]:
-
-        st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
-        st.image(plant["image_url"], use_container_width=True)
-
-        st.write("💧", plant["watering"])
-        st.write("🌞", plant["sunlight"])
-
-        if st.button("📖 التفاصيل", key="d_" + plant["id"]):
-            st.session_state["selected"] = plant
-
-        if st.button("❤️ مفضلة", key="f_" + plant["id"]):
-            add_favorite(plant["id"])
-
-
-# ======================
-# DETAILS PAGE
-# ======================
-if st.session_state["selected"]:
-    plant = st.session_state["selected"]
-
-    st.title(f"🌿 {plant['name_ar'] or plant['name']}")
-    st.image(plant["image_url"], use_container_width=True)
-
-    st.markdown("### 📝 الوصف")
-    st.write(plant["description"])
-
-    st.markdown("### 💧 الري")
-    st.write(plant["watering"])
-
-    st.markdown("### 🌞 الضوء")
-    st.write(plant["sunlight"])
-
-    st.markdown("### 💡 النصائح")
-    st.write(plant["tips"])
-
-    if st.button("⬅ رجوع"):
-        st.session_state["selected"] = None
-        st.rerun()
