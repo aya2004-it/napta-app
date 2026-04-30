@@ -16,13 +16,13 @@ supabase = create_client(url, key)
 data = supabase.table("plants").select("*").execute().data
 
 # ======================
-# SESSION STATE (للتنقل)
+# SESSION STATE
 # ======================
 if "selected" not in st.session_state:
     st.session_state["selected"] = None
 
 # ======================
-# صفحة التفاصيل
+# PAGE: DETAILS
 # ======================
 def show_details(plant):
     st.markdown("## 🌿 تفاصيل النبتة")
@@ -54,18 +54,21 @@ def show_details(plant):
 
 
 # ======================
-# لو في نبتة مختارة → اعرض التفاصيل
+# DETAILS VIEW
 # ======================
 if st.session_state["selected"]:
     show_details(st.session_state["selected"])
     st.stop()
 
 # ======================
-# الصفحة الرئيسية
+# HEADER
 # ======================
 st.title("🌿 نبتاتي - معرض النباتات الذكي")
-st.caption("اضغط على أي نبتة لمعرفة تفاصيلها")
+st.caption("اضغط على أي نبتة لمشاهدة التفاصيل")
 
+# ======================
+# SEARCH + FILTER
+# ======================
 search = st.text_input("🔍 بحث عن نبتة")
 
 filter_type = st.selectbox("🌱 تصنيف", ["الكل", "indoor", "desert"])
@@ -78,20 +81,44 @@ if search:
 if filter_type != "الكل":
     plants = [p for p in plants if p["type"] == filter_type]
 
+# ======================
+# GRID UI CARDS (FINAL UI)
+# ======================
 cols = st.columns(3)
 
 for i, plant in enumerate(plants):
     with cols[i % 3]:
 
-        st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
+        name = plant["name_ar"] or plant["name"]
+
+        st.markdown(f"""
+        <div style="
+            background:white;
+            padding:15px;
+            border-radius:20px;
+            box-shadow:0px 4px 15px rgba(0,0,0,0.1);
+            margin-bottom:15px;
+            text-align:center;
+        ">
+            <h3>🌿 {name}</h3>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.image(plant["image_url"], use_container_width=True)
 
-        st.write("💧", plant["watering"])
-        st.write("🌞", plant["sunlight"])
+        st.markdown(f"""
+        <div style="margin-top:10px;">
+            <b>💧 الري:</b> {plant['watering']}<br>
+            <b>🌞 الضوء:</b> {plant['sunlight']}
+        </div>
+        """, unsafe_allow_html=True)
 
-        if st.button("📖 التفاصيل", key="details_" + plant["id"]):
-            st.session_state["selected"] = plant
+        col1, col2 = st.columns(2)
 
-        if st.button("❤️ مفضلة", key="fav_" + plant["id"]):
-            st.toast("تمت الإضافة ❤️")
+        with col1:
+            if st.button("📖 التفاصيل", key="details_" + plant["id"]):
+                st.session_state["selected"] = plant
+
+        with col2:
+            if st.button("❤️ مفضلة", key="fav_" + plant["id"]):
+                st.toast("تمت الإضافة ❤️")
