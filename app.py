@@ -28,30 +28,22 @@ st.markdown(
     [data-testid="stSidebar"] * {
         color: #ffffff !important;
     }
-    /* Custom sidebar buttons instead of radio */
-    .sidebar-button {
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 16px;
-        padding: 12px 20px;
-        margin: 8px 0;
-        text-align: center;
-        font-size: 1.1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
+    /* Professional sidebar buttons */
+    .stButton button {
+        background: linear-gradient(95deg, #2e7d32 0%, #4caf50 100%);
         color: white;
+        border: none;
+        border-radius: 40px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .sidebar-button:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateX(5px);
-        border-color: rgba(255, 255, 255, 0.5);
-    }
-    .sidebar-button-active {
-        background: linear-gradient(95deg, #4caf50, #2e7d32);
-        border-color: #4caf50;
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    .stButton button:hover {
+        transform: scale(0.98);
+        background: linear-gradient(95deg, #1b5e20 0%, #388e3c 100%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     /* Titles */
     h1, h2, h3 {
@@ -97,23 +89,6 @@ st.markdown(
         color: #2c5e2e;
         display: inline-block;
         margin: 2px 0;
-    }
-    /* Buttons */
-    .stButton button {
-        background: linear-gradient(95deg, #2e7d32 0%, #4caf50 100%);
-        color: white;
-        border: none;
-        border-radius: 40px;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-        width: 100%;
-        transition: 0.2s;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .stButton button:hover {
-        transform: scale(0.98);
-        background: linear-gradient(95deg, #1b5e20 0%, #388e3c 100%);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     /* Favorite heart button special */
     .fav-button button {
@@ -161,39 +136,6 @@ st.markdown(
         outline: none;
         border-color: #4caf50;
         box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-    }
-    /* Professional nav buttons in main content */
-    .nav-buttons-container {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 30px;
-        justify-content: center;
-        background: white;
-        padding: 10px;
-        border-radius: 60px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-    .nav-btn {
-        flex: 1;
-        text-align: center;
-        padding: 12px 24px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: none;
-        background: #f0f2f6;
-        color: #555;
-    }
-    .nav-btn-active {
-        background: linear-gradient(95deg, #2e7d32, #4caf50);
-        color: white;
-        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
-    }
-    .nav-btn:hover:not(.nav-btn-active) {
-        background: #e0e0e0;
-        transform: translateY(-2px);
     }
     </style>
     """,
@@ -289,16 +231,14 @@ with st.sidebar:
     st.title("🌿 Napta")
     st.markdown("---")
     
-    # Professional custom buttons instead of radio
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🏠 الرئيسية", key="sidebar_home", use_container_width=True):
-            st.session_state["page"] = "home"
-            st.rerun()
-    with col2:
-        if st.button("❤️ المفضلة", key="sidebar_fav", use_container_width=True):
-            st.session_state["page"] = "favorites"
-            st.rerun()
+    # Professional buttons in sidebar
+    if st.button("🏠 الرئيسية", key="sidebar_home", use_container_width=True):
+        st.session_state["page"] = "home"
+        st.rerun()
+    
+    if st.button("❤️ المفضلة", key="sidebar_fav", use_container_width=True):
+        st.session_state["page"] = "favorites"
+        st.rerun()
     
     st.markdown("---")
     st.caption("✨ اعتني بنباتاتك بحب")
@@ -350,9 +290,14 @@ if st.session_state["page"] == "details":
     st.stop()
 
 # ======================
-# SEARCH BAR (ABOVE MAIN CONTENT)
+# MAIN CONTENT
 # ======================
-search = st.text_input("🔍 ابحث عن نبتة", placeholder="اكتب اسم النبتة...", key="search_main")
+
+# Show search bar only on home page
+if st.session_state["page"] == "home":
+    search = st.text_input("🔍 ابحث عن نبتة", placeholder="اكتب اسم النبتة...", key="search_main")
+else:
+    search = ""
 
 # ======================
 # FILTER LOGIC
@@ -363,28 +308,6 @@ if search:
         p for p in plants
         if search.lower() in (p.get("name_ar", "") or p.get("name", "")).lower()
     ]
-
-# ======================
-# MAIN CONTENT WITH PROFESSIONAL NAV BUTTONS
-# ======================
-
-# Professional navigation buttons at top of main content
-st.markdown("""
-<div class="nav-buttons-container">
-    <button class="nav-btn nav-btn-active" onclick="window.location.href='?nav=home'">🏠 الرئيسية</button>
-    <button class="nav-btn" onclick="window.location.href='?nav=favorites'">❤️ المفضلة</button>
-</div>
-""", unsafe_allow_html=True)
-
-# Handle navigation from custom buttons
-import re
-query_params = st.query_params
-if "nav" in query_params:
-    if query_params["nav"] == "favorites":
-        st.session_state["page"] = "favorites"
-    else:
-        st.session_state["page"] = "home"
-    st.rerun()
 
 # ======================
 # HOME PAGE
