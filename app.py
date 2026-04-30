@@ -1,10 +1,9 @@
 import streamlit as st
 from supabase import create_client
 
-# 📌 إعداد الصفحة
 st.set_page_config(page_title="معرض نبتة", page_icon="🌿")
 
-# 🌍 RTL عربي
+# 🌍 RTL
 st.markdown("""
 <style>
 html, body, [class*="css"]  {
@@ -16,7 +15,7 @@ html, body, [class*="css"]  {
 
 st.title("🌿 معرض النباتات الذكي")
 
-# 🔍 Search + 🌿 Filter (جاهز للخطوة القادمة)
+# 🔍 Search + Filter
 search = st.text_input("🔍 ابحث عن نبتة")
 
 filter_type = st.selectbox(
@@ -32,9 +31,22 @@ try:
     response = supabase.table("plants").select("*").execute()
     data = response.data
 
+    # =========================
+    # 🧠 فلترة حقيقية هنا
+    # =========================
+
+    if search:
+        data = [p for p in data if search.lower() in p["name"].lower()]
+
+    if filter_type != "الكل":
+        data = [p for p in data if p.get("type") == filter_type]
+
+    # =========================
+    # 📦 عرض النباتات
+    # =========================
+
     if data:
 
-        # 📦 Grid layout (3 أعمدة)
         cols = st.columns(3)
 
         for i, plant in enumerate(data):
@@ -42,23 +54,19 @@ try:
 
                 st.markdown("----")
 
-                # 🖼️ صورة صغيرة منظمة
                 st.image(
                     plant["image_url"],
                     use_container_width=True
                 )
 
-                # 🌿 الاسم
                 st.markdown(f"### 🌱 {plant['name']}")
 
-                # 📄 وصف مختصر
                 st.write(plant["description"][:80] + "...")
 
-                # ❤️ زر مبدئي (جاهز لاحقاً للمفضلة)
                 st.button("❤️ مفضلة", key=f"fav_{plant['id']}")
 
     else:
-        st.info("⚠️ لا توجد نباتات")
+        st.warning("لا توجد نتائج تطابق البحث")
 
 except Exception as e:
     st.error("❌ خطأ في الاتصال")
