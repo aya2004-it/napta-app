@@ -8,14 +8,15 @@ st.set_page_config(page_title="Napta 🌿", page_icon="🌿", layout="wide")
 
 st.markdown("""
     <style>
-    .plant-card {
+    .card {
         background: white;
         padding: 15px;
         border-radius: 15px;
         box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
         text-align: center;
+        margin-bottom: 20px;
     }
-    .plant-title {
+    .title {
         font-size: 20px;
         font-weight: bold;
     }
@@ -34,46 +35,58 @@ data = supabase.table("plants").select("*").execute().data
 # ======================
 # HEADER
 # ======================
-st.title("🌿 Napta - نباتاتي الذكية")
-st.caption("اكتشف النباتات، اعرف طريقة العناية، واحتفظ بالمفضلة ❤️")
+st.title("🌿 نبتاتي - معرض النباتات الذكي")
+st.caption("اكتشف النباتات وتعرف على طريقة العناية بها 🌱")
 
 # ======================
-# SEARCH
+# SEARCH + FILTER
 # ======================
 search = st.text_input("🔍 ابحث عن نبتة")
 
-# ======================
-# FILTER
-# ======================
-filter_type = st.selectbox("🌱 فلترة", ["الكل", "indoor", "desert"])
+filter_type = st.selectbox("🌱 تصنيف النباتات", ["الكل", "indoor", "desert"])
 
 # ======================
-# FILTER DATA
+# FALLBACK IMAGES (حل مشكلة تكرار الصور)
+# ======================
+default_images = {
+    "Aloe Vera": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "Cactus": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "Rose": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
+}
+
+# ======================
+# FILTER LOGIC
 # ======================
 plants = data
 
 if search:
-    plants = [p for p in plants if search in (p["name"] or "") or search in (p["name_ar"] or "")]
+    plants = [p for p in plants if search in (p["name_ar"] or p["name"] or "")]
 
 if filter_type != "الكل":
     plants = [p for p in plants if p["type"] == filter_type]
 
 # ======================
-# GRID DISPLAY
+# DISPLAY GRID
 # ======================
 cols = st.columns(3)
 
 for i, plant in enumerate(plants):
     with cols[i % 3]:
-        st.markdown("### 🌿 " + (plant["name_ar"] or plant["name"]))
 
-        st.image(plant["image_url"], use_container_width=True)
+        name = plant["name_ar"] or plant["name"]
 
-        st.write("💧", plant["watering"])
-        st.write("🌞", plant["sunlight"])
+        st.markdown(f"### 🌿 {name}")
 
-        if st.button("📖 التفاصيل", key=plant["id"]):
+        st.image(
+            plant["image_url"] or default_images.get(plant["name"], ""),
+            use_container_width=True
+        )
+
+        st.write("💧 الري:", plant["watering"])
+        st.write("🌞 الضوء:", plant["sunlight"])
+
+        if st.button("📖 التفاصيل", key="details_" + plant["id"]):
             st.session_state["selected"] = plant
 
-        if st.button("❤️", key="fav_" + plant["id"]):
+        if st.button("❤️ مفضلة", key="fav_" + plant["id"]):
             st.toast("تمت الإضافة للمفضلة ❤️")
