@@ -16,10 +16,6 @@ st.markdown("""
         text-align: center;
         margin-bottom: 20px;
     }
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -36,7 +32,7 @@ data = supabase.table("plants").select("*").execute().data
 # HEADER
 # ======================
 st.title("🌿 نبتاتي - معرض النباتات الذكي")
-st.caption("اكتشف النباتات وتعرف على طريقة العناية بها 🌱")
+st.caption("اكتشف النباتات وتعرف على العناية بها 🌱")
 
 # ======================
 # SEARCH + FILTER
@@ -46,12 +42,21 @@ search = st.text_input("🔍 ابحث عن نبتة")
 filter_type = st.selectbox("🌱 تصنيف النباتات", ["الكل", "indoor", "desert"])
 
 # ======================
-# FALLBACK IMAGES (حل مشكلة تكرار الصور)
+# 🔥 FIXED IMAGES MAP (الحل الحقيقي)
 # ======================
-default_images = {
-    "Aloe Vera": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-    "Cactus": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-    "Rose": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
+fixed_images = {
+    "ألوفيرا": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "الصبار": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "الخزامى": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "النعناع": "https://images.unsplash.com/photo-1464375117522-1311dd51bb81",
+    "الورد": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "الريحان": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "الياسمين": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "السرخس": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "نبتة المال": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "لسان الثعبان": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "شجرة الزيتون": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "نخيل التمر": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
 }
 
 # ======================
@@ -77,10 +82,10 @@ for i, plant in enumerate(plants):
 
         st.markdown(f"### 🌿 {name}")
 
-        st.image(
-            plant["image_url"] or default_images.get(plant["name"], ""),
-            use_container_width=True
-        )
+        # 🔥 هنا التغيير الحقيقي
+        image_url = fixed_images.get(name, plant["image_url"])
+
+        st.image(image_url, use_container_width=True)
 
         st.write("💧 الري:", plant["watering"])
         st.write("🌞 الضوء:", plant["sunlight"])
