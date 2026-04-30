@@ -308,7 +308,7 @@ if st.session_state["page"] == "details":
 
 # Show search bar only on home page (without label)
 if st.session_state["page"] == "home":
-    search = st.text_input("", placeholder="🔍 ابحث عن اسم نبتة", key="search_main")
+    search = st.text_input("", placeholder=" ابحث عن اسم النبته", key="search_main")
 else:
     search = ""
 
@@ -326,7 +326,7 @@ if search:
 # HOME PAGE
 # ======================
 if st.session_state["page"] == "home":
-    st.markdown("<h1 style='text-align: right;'>🌿 Napta</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: right;'> النباتات</h1>", unsafe_allow_html=True)
     st.markdown("---")
     
     if not filtered_plants:
