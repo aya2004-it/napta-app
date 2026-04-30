@@ -334,7 +334,7 @@ if st.session_state["page"] == "home":
 # FAVORITES PAGE
 # ======================
 if st.session_state["page"] == "favorites":
-    st.markdown("<h1 style='text-align: right;'>❤️ My Favorite Plants</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: right;'></h1>", unsafe_allow_html=True)
     st.markdown("---")
     
     if not fav_ids:
