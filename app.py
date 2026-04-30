@@ -271,7 +271,7 @@ if st.session_state["page"] == "details":
     # Description
     with st.container():
         st.markdown('<div class="detail-section">', unsafe_allow_html=True)
-        st.markdown("## 📝 الوصف")
+        st.markdown("##  الوصف")
         st.write(plant["description"])
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -279,16 +279,16 @@ if st.session_state["page"] == "details":
     col_info1, col_info2 = st.columns(2)
     with col_info1:
         st.markdown('<div class="detail-section">', unsafe_allow_html=True)
-        st.markdown("## 💧 طريقة الري")
+        st.markdown("##  طريقة الري")
         st.write(plant["watering"])
-        st.markdown("## 🌞 الإضاءة")
+        st.markdown("##  الإضاءة")
         st.write(plant["sunlight"])
         st.markdown("</div>", unsafe_allow_html=True)
     with col_info2:
         st.markdown('<div class="detail-section">', unsafe_allow_html=True)
-        st.markdown("## 🌿 نصائح العناية")
+        st.markdown("##  نصائح العناية")
         st.write(plant["tips"])
-        st.markdown("## 🌍 البيئة المناسبة")
+        st.markdown("##  البيئة المناسبة")
         st.write(plant["location"])
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -304,7 +304,7 @@ if st.session_state["page"] == "details":
 
 # Show search bar only on home page (without label)
 if st.session_state["page"] == "home":
-    search = st.text_input("", placeholder="🔍 ابحث عن اسم نبتة", key="search_main")
+    search = st.text_input("", placeholder=" ابحث عن اسم النبته", key="search_main")
 else:
     search = ""
 
@@ -322,7 +322,7 @@ if search:
 # HOME PAGE
 # ======================
 if st.session_state["page"] == "home":
-    st.markdown("<h1 style='text-align: right;'>🌿 Napta</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: right;'>النباتات</h1>", unsafe_allow_html=True)
     st.markdown("---")
     
     if not filtered_plants:
