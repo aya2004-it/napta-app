@@ -1,155 +1,63 @@
 import streamlit as st
 from supabase import create_client
 
-# ======================
-# CONFIG
-# ======================
 st.set_page_config(page_title="Napta 🌿", page_icon="🌿", layout="wide")
 
-# ======================
-# SUPABASE
-# ======================
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
-# ======================
-# LOAD DATA
-# ======================
 plants = supabase.table("plants").select("*").execute().data
+favorites = supabase.table("favorites").select("*").execute().data
 
+fav_ids = [f["plant_id"] for f in favorites]
 
 # ======================
-# FAVORITES FUNCTIONS
+# TOGGLE FAVORITE
 # ======================
-def add_favorite(plant_id):
-    # منع التكرار
-    check = supabase.table("favorites") \
-        .select("*") \
-        .eq("plant_id", plant_id) \
-        .execute()
-
-    if check.data:
-        st.toast("❤️ موجودة مسبقًا")
+def toggle_favorite(plant_id):
+    if plant_id in fav_ids:
+        supabase.table("favorites") \
+            .delete() \
+            .eq("plant_id", plant_id) \
+            .execute()
+        st.toast("💔 تم الحذف من المفضلة")
     else:
         supabase.table("favorites").insert({
             "plant_id": plant_id
         }).execute()
         st.toast("❤️ تمت الإضافة")
 
-
-def get_favorites():
-    favs = supabase.table("favorites").select("*").execute().data
-
-    plant_ids = [f["plant_id"] for f in favs]
-
-    if not plant_ids:
-        return []
-
-    return supabase.table("plants") \
-        .select("*") \
-        .in_("id", plant_ids) \
-        .execute().data
+# ======================
+# REFRESH FAVS
+# ======================
+def refresh_favs():
+    global favorites, fav_ids
+    favorites = supabase.table("favorites").select("*").execute().data
+    fav_ids = [f["plant_id"] for f in favorites]
 
 
 # ======================
-# SESSION STATE
+# UI
 # ======================
-if "page" not in st.session_state:
-    st.session_state["page"] = "home"
+st.title("🌿 نبتاتي - النسخة الاحترافية")
 
-if "selected" not in st.session_state:
-    st.session_state["selected"] = None
+cols = st.columns(3)
 
+for i, plant in enumerate(plants):
+    with cols[i % 3]:
 
-# ======================
-# NAVIGATION
-# ======================
-st.sidebar.title("🌿 Napta")
+        name = plant["name_ar"] or plant["name"]
 
-if st.sidebar.button("🏠 الرئيسية"):
-    st.session_state["page"] = "home"
+        st.markdown(f"### 🌿 {name}")
+        st.image(plant["image_url"], use_container_width=True)
 
-if st.sidebar.button("❤️ المفضلة"):
-    st.session_state["page"] = "favorites"
+        st.write("💧", plant["watering"])
+        st.write("🌞", plant["sunlight"])
 
+        heart = "❤️" if plant["id"] in fav_ids else "🤍"
 
-# ======================
-# FAVORITES PAGE
-# ======================
-if st.session_state["page"] == "favorites":
-    st.title("❤️ المفضلة")
-
-    favs = get_favorites()
-
-    if not favs:
-        st.info("لا توجد مفضلات بعد 🌿")
-    else:
-        cols = st.columns(3)
-
-        for i, plant in enumerate(favs):
-            with cols[i % 3]:
-
-                st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
-                st.image(plant["image_url"], use_container_width=True)
-
-                st.write("💧", plant["watering"])
-                st.write("🌞", plant["sunlight"])
-
-                if st.button("📖 التفاصيل", key="fav_" + plant["id"]):
-                    st.session_state["selected"] = plant
-                    st.session_state["page"] = "home"
-                    st.rerun()
-
-    st.stop()
-
-
-# ======================
-# HOME PAGE
-# ======================
-if st.session_state["page"] == "home":
-
-    st.title("🌿 نبتاتي - معرض النباتات")
-
-    cols = st.columns(3)
-
-    for i, plant in enumerate(plants):
-        with cols[i % 3]:
-
-            st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
-            st.image(plant["image_url"], use_container_width=True)
-
-            st.write("💧", plant["watering"])
-            st.write("🌞", plant["sunlight"])
-
-            if st.button("📖 التفاصيل", key="d_" + plant["id"]):
-                st.session_state["selected"] = plant
-
-            if st.button("❤️ مفضلة", key="f_" + plant["id"]):
-                add_favorite(plant["id"])
-
-
-# ======================
-# DETAILS PAGE
-# ======================
-if st.session_state["selected"]:
-    plant = st.session_state["selected"]
-
-    st.title(f"🌿 {plant['name_ar'] or plant['name']}")
-    st.image(plant["image_url"], use_container_width=True)
-
-    st.markdown("### 📝 الوصف")
-    st.write(plant["description"])
-
-    st.markdown("### 💧 الري")
-    st.write(plant["watering"])
-
-    st.markdown("### 🌞 الضوء")
-    st.write(plant["sunlight"])
-
-    st.markdown("### 💡 النصائح")
-    st.write(plant["tips"])
-
-    if st.button("⬅ رجوع"):
-        st.session_state["selected"] = None
-        st.rerun()
+        if st.button(f"{heart} مفضلة", key="fav_" + plant["id"]):
+            toggle_favorite(plant["id"])
+            refresh_favs()
+            st.rerun()
