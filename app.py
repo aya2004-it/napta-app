@@ -32,15 +32,6 @@ st.markdown(
         font-size: 1.1rem;
         font-weight: 500;
     }
-    [data-testid="stSidebar"] .stTextInput input {
-        background-color: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        border-radius: 30px;
-    }
-    [data-testid="stSidebar"] .stTextInput input::placeholder {
-        color: #d4e6d4;
-    }
     /* Titles */
     h1, h2, h3 {
         font-family: 'Segoe UI', 'Tahoma', sans-serif;
@@ -130,6 +121,26 @@ st.markdown(
         height: 2px;
         background: linear-gradient(90deg, #c8e6c9, #4caf50, #c8e6c9);
     }
+    /* Search bar styling */
+    .search-container {
+        margin-bottom: 2rem;
+        padding: 0 0.5rem;
+    }
+    .search-container input {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        background: white;
+        text-align: right;
+    }
+    .search-container input:focus {
+        outline: none;
+        border-color: #4caf50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -171,7 +182,7 @@ if "selected_plant" not in st.session_state:
 def toggle_favorite(plant_id):
     if plant_id in fav_ids:
         supabase.table("favorites").delete().eq("plant_id", plant_id).execute()
-        st.toast("💔 تم إزالتها من المفضلة", icon="🌿")
+        st.toast(" تم إزالتها من المفضلة", icon="🌿")
     else:
         supabase.table("favorites").insert({"plant_id": plant_id}).execute()
         st.toast("❤️ أُضيفت إلى المفضلة", icon="✨")
@@ -204,7 +215,7 @@ def display_plant_card(plant, is_fav_page=False):
     col1, col2 = st.columns(2)
     with col1:
         if is_fav_page:
-            if st.button("💔 إزالة", key=f"del_{plant['id']}", use_container_width=True):
+            if st.button(" إزالة", key=f"del_{plant['id']}", use_container_width=True):
                 toggle_favorite(plant["id"])
         else:
             heart = "❤️" if plant["id"] in fav_ids else "🤍"
@@ -231,10 +242,7 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    search = st.text_input("🔍 ابحث عن نبتة", placeholder="اكتب اسم النبتة...")
-    
-    st.markdown("---")
-    st.caption("✨ اعتني بنباتاتك بحب")
+    st.caption(" اعتني بنباتاتك")
     st.caption("© 2025 Napta")
 
 # ======================
@@ -281,6 +289,11 @@ if st.session_state["page"] == "details":
         st.session_state["page"] = "home"
         st.rerun()
     st.stop()
+
+# ======================
+# SEARCH BAR (ABOVE MAIN CONTENT)
+# ======================
+search = st.text_input("🔍 ابحث عن نبتة", placeholder="اكتب اسم النبتة...", key="search_main")
 
 # ======================
 # FILTER LOGIC
