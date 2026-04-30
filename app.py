@@ -1,53 +1,92 @@
 import streamlit as st
 from supabase import create_client
 
+# ======================
+# CONFIG
+# ======================
 st.set_page_config(page_title="Napta 🌿", page_icon="🌿", layout="wide")
 
+st.markdown("""
+    <style>
+    .card {
+        background: white;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ======================
+# SUPABASE
+# ======================
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
 data = supabase.table("plants").select("*").execute().data
 
+# ======================
+# HEADER
+# ======================
 st.title("🌿 نبتاتي - معرض النباتات الذكي")
+st.caption("اكتشف النباتات وتعرف على طريقة العناية بها 🌱")
 
-# 🔥 صور حسب ID (أقوى حل)
-fixed_images = {
-    # حطينا أمثلة حسب الترتيب (تقدر تعدلهم)
-    1: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-    2: "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc",
-    3: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
+# ======================
+# SEARCH + FILTER
+# ======================
+search = st.text_input("🔍 ابحث عن نبتة")
+
+filter_type = st.selectbox("🌱 تصنيف النباتات", ["الكل", "indoor", "desert"])
+
+# ======================
+# FALLBACK IMAGES (حل مشكلة تكرار الصور)
+# ======================
+default_images = {
+    "Aloe Vera": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "Cactus": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+    "Rose": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
 }
 
-search = st.text_input("🔍 بحث")
-
-filter_type = st.selectbox("🌱 فلترة", ["الكل", "indoor", "desert"])
-
+# ======================
+# FILTER LOGIC
+# ======================
 plants = data
 
 if search:
-    plants = [p for p in plants if search in (p["name_ar"] or "")]
+    plants = [p for p in plants if search in (p["name_ar"] or p["name"] or "")]
 
 if filter_type != "الكل":
     plants = [p for p in plants if p["type"] == filter_type]
 
+# ======================
+# DISPLAY GRID
+# ======================
 cols = st.columns(3)
 
 for i, plant in enumerate(plants):
     with cols[i % 3]:
 
-        st.markdown(f"### 🌿 {plant['name_ar']}")
+        name = plant["name_ar"] or plant["name"]
 
-        # 🔥 الحل الحقيقي
-        image_url = fixed_images.get(i+1, plant["image_url"])
+        st.markdown(f"### 🌿 {name}")
 
-        st.image(image_url, use_container_width=True)
+        st.image(
+            plant["image_url"] or default_images.get(plant["name"], ""),
+            use_container_width=True
+        )
 
-        st.write("💧", plant["watering"])
-        st.write("🌞", plant["sunlight"])
+        st.write("💧 الري:", plant["watering"])
+        st.write("🌞 الضوء:", plant["sunlight"])
 
-        if st.button("📖 التفاصيل", key=plant["id"]):
+        if st.button("📖 التفاصيل", key="details_" + plant["id"]):
             st.session_state["selected"] = plant
 
         if st.button("❤️ مفضلة", key="fav_" + plant["id"]):
-            st.toast("تمت الإضافة ❤️")
+            st.toast("تمت الإضافة للمفضلة ❤️")
