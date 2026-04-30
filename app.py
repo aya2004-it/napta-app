@@ -182,10 +182,10 @@ if "selected_plant" not in st.session_state:
 def toggle_favorite(plant_id):
     if plant_id in fav_ids:
         supabase.table("favorites").delete().eq("plant_id", plant_id).execute()
-        st.toast("💔 تم إزالتها من المفضلة", icon="🌿")
+        st.toast(" تم إزالتها من المفضلة")
     else:
         supabase.table("favorites").insert({"plant_id": plant_id}).execute()
-        st.toast("❤️ أُضيفت إلى المفضلة", icon="✨")
+        st.toast("❤️ أُضيفت إلى المفضلة")
     st.cache_data.clear()
     st.rerun()
 
@@ -202,7 +202,7 @@ def display_plant_card(plant, is_fav_page=False):
     card_html = f"""
     <div class="plant-card">
         <img src="{plant['image_url']}" class="plant-img" alt="{name}">
-        <h3 style="margin: 0 0 5px 0;">🌿 {name}</h3>
+        <h3 style="margin: 0 0 5px 0;">{name}</h3>
         <div style="margin: 8px 0;">
             <span class="info-badge">💧 {plant['watering']}</span>
             <span class="info-badge">🌞 {plant['sunlight']}</span>
@@ -215,14 +215,14 @@ def display_plant_card(plant, is_fav_page=False):
     col1, col2 = st.columns(2)
     with col1:
         if is_fav_page:
-            if st.button("💔 إزالة", key=f"del_{plant['id']}", use_container_width=True):
+            if st.button(" إزالة", key=f"del_{plant['id']}", use_container_width=True):
                 toggle_favorite(plant["id"])
         else:
             heart = "❤️" if plant["id"] in fav_ids else "🤍"
             if st.button(f"{heart} مفضلة", key=f"fav_{plant['id']}", use_container_width=True):
                 toggle_favorite(plant["id"])
     with col2:
-        if st.button("📖 تفاصيل العناية", key=f"det_{plant['id']}", use_container_width=True):
+        if st.button(" تفاصيل العناية", key=f"det_{plant['id']}", use_container_width=True):
             st.session_state["selected_plant"] = plant
             st.session_state["page"] = "details"
             st.rerun()
@@ -236,11 +236,11 @@ with st.sidebar:
     st.markdown("---")
     
     # Professional buttons in sidebar
-    if st.button("🏠 الرئيسية", key="sidebar_home", use_container_width=True):
+    if st.button(" الرئيسية", key="sidebar_home", use_container_width=True):
         st.session_state["page"] = "home"
         st.rerun()
     
-    if st.button("❤️ المفضلة", key="sidebar_fav", use_container_width=True):
+    if st.button(" المفضلة", key="sidebar_fav", use_container_width=True):
         st.session_state["page"] = "favorites"
         st.rerun()
     
@@ -298,7 +298,7 @@ if st.session_state["page"] == "details":
 
 # Show search bar only on home page (without label)
 if st.session_state["page"] == "home":
-    search = st.text_input("", placeholder="🔍 ابحث عن نبتة...", key="search_main")
+    search = st.text_input("", placeholder=" ابحث عن نبته...", key="search_main")
 else:
     search = ""
 
@@ -338,7 +338,7 @@ if st.session_state["page"] == "favorites":
     st.markdown("---")
     
     if not fav_ids:
-        st.info("✨ لا توجد مفضلات بعد... أضف نباتاتك المفضلة لرؤيتها هنا")
+        st.info(" لا توجد مفضلات بعد... أضف نباتاتك المفضلة لرؤيتها هنا")
     else:
         fav_plants_data = supabase.table("plants").select("*").in_("id", fav_ids).execute().data
         if fav_plants_data:
