@@ -6,23 +6,6 @@ from supabase import create_client
 # ======================
 st.set_page_config(page_title="Napta 🌿", page_icon="🌿", layout="wide")
 
-st.markdown("""
-    <style>
-    .card {
-        background: white;
-        padding: 15px;
-        border-radius: 15px;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # ======================
 # SUPABASE
 # ======================
@@ -33,30 +16,60 @@ supabase = create_client(url, key)
 data = supabase.table("plants").select("*").execute().data
 
 # ======================
-# HEADER
+# SESSION STATE (للتنقل)
+# ======================
+if "selected" not in st.session_state:
+    st.session_state["selected"] = None
+
+# ======================
+# صفحة التفاصيل
+# ======================
+def show_details(plant):
+    st.markdown("## 🌿 تفاصيل النبتة")
+
+    st.image(plant["image_url"], use_container_width=True)
+
+    st.markdown(f"# {plant['name_ar'] or plant['name']}")
+
+    st.markdown("### 📝 الوصف")
+    st.write(plant["description"])
+
+    st.markdown("### 💧 الري")
+    st.write(plant["watering"])
+
+    st.markdown("### 🌞 الضوء")
+    st.write(plant["sunlight"])
+
+    st.markdown("### 💡 النصائح")
+    st.write(plant["tips"])
+
+    st.markdown("### 🌍 البيئة")
+    st.write(plant["location"])
+
+    st.markdown("### 🌱 النوع")
+    st.write(plant["type"])
+
+    if st.button("⬅ الرجوع"):
+        st.session_state["selected"] = None
+
+
+# ======================
+# لو في نبتة مختارة → اعرض التفاصيل
+# ======================
+if st.session_state["selected"]:
+    show_details(st.session_state["selected"])
+    st.stop()
+
+# ======================
+# الصفحة الرئيسية
 # ======================
 st.title("🌿 نبتاتي - معرض النباتات الذكي")
-st.caption("اكتشف النباتات وتعرف على طريقة العناية بها 🌱")
+st.caption("اضغط على أي نبتة لمعرفة تفاصيلها")
 
-# ======================
-# SEARCH + FILTER
-# ======================
-search = st.text_input("🔍 ابحث عن نبتة")
+search = st.text_input("🔍 بحث عن نبتة")
 
-filter_type = st.selectbox("🌱 تصنيف النباتات", ["الكل", "indoor", "desert"])
+filter_type = st.selectbox("🌱 تصنيف", ["الكل", "indoor", "desert"])
 
-# ======================
-# FALLBACK IMAGES (حل مشكلة تكرار الصور)
-# ======================
-default_images = {
-    "Aloe Vera": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-    "Cactus": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-    "Rose": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
-}
-
-# ======================
-# FILTER LOGIC
-# ======================
 plants = data
 
 if search:
@@ -65,28 +78,20 @@ if search:
 if filter_type != "الكل":
     plants = [p for p in plants if p["type"] == filter_type]
 
-# ======================
-# DISPLAY GRID
-# ======================
 cols = st.columns(3)
 
 for i, plant in enumerate(plants):
     with cols[i % 3]:
 
-        name = plant["name_ar"] or plant["name"]
+        st.markdown(f"### 🌿 {plant['name_ar'] or plant['name']}")
 
-        st.markdown(f"### 🌿 {name}")
+        st.image(plant["image_url"], use_container_width=True)
 
-        st.image(
-            plant["image_url"] or default_images.get(plant["name"], ""),
-            use_container_width=True
-        )
-
-        st.write("💧 الري:", plant["watering"])
-        st.write("🌞 الضوء:", plant["sunlight"])
+        st.write("💧", plant["watering"])
+        st.write("🌞", plant["sunlight"])
 
         if st.button("📖 التفاصيل", key="details_" + plant["id"]):
             st.session_state["selected"] = plant
 
         if st.button("❤️ مفضلة", key="fav_" + plant["id"]):
-            st.toast("تمت الإضافة للمفضلة ❤️")
+            st.toast("تمت الإضافة ❤️")
