@@ -1,31 +1,29 @@
 import streamlit as st
 from supabase import create_client
 
-# إعداد الصفحة
-st.set_page_config(page_title="نبتة - Napta", page_icon="🌿")
+st.set_page_config(page_title="معرض نبتة", page_icon="🌿")
 st.title("🌿 معرض النباتات الذكي")
 
-# الربط بقاعدة البيانات
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
-supabase = create_client(url, key)
-
-# جلب البيانات
+# جلب البيانات من Secrets
 try:
-    response = supabase.table("plants").select("*").execute()
-    data = response.data
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    supabase = create_client(url, key)
 
-    if data:
-        for plant in data:
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.image(plant['image_url'], use_container_width=True)
-            with col2:
-                st.subheader(plant['name'])
+    # محاولة جلب البيانات
+    response = supabase.table("plants").select("*").execute()
+    
+    if response.data:
+        for plant in response.data:
+            with st.container():
+                st.markdown(f"### {plant['name']}")
+                st.image(plant['image_url'], width=300)
                 st.write(plant['description'])
-                st.info(f"📍 المكان: {plant.get('location', 'غير محدد')}")
+                st.divider()
     else:
-        st.warning("لا توجد نباتات في الجدول حالياً.")
+        st.info("الجدول فارغ، أضيفي بعض النباتات في Supabase!")
 
 except Exception as e:
-    st.error(f"حدث خطأ أثناء الاتصال: {e}")
+    st.error("❌ فشل الاتصال بقاعدة البيانات")
+    st.info("تأكدي من صحة الـ API Key والـ URL في إعدادات Secrets")
+    st.warning(f"تفاصيل الخطأ التقني: {e}")
