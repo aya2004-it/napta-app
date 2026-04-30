@@ -131,6 +131,11 @@ st.markdown(
         transition: all 0.3s ease;
         background: white;
         text-align: right;
+        direction: rtl;
+    }
+    .search-container input::placeholder {
+        text-align: right;
+        direction: rtl;
     }
     .search-container input:focus {
         outline: none;
@@ -140,6 +145,11 @@ st.markdown(
     /* Remove label from search input */
     .stTextInput label {
         display: none !important;
+    }
+    /* Make search input RTL */
+    .stTextInput input {
+        text-align: right !important;
+        direction: rtl !important;
     }
     </style>
     """,
@@ -298,7 +308,7 @@ if st.session_state["page"] == "details":
 
 # Show search bar only on home page (without label)
 if st.session_state["page"] == "home":
-    search = st.text_input("", placeholder=" ابحث عن نبته...", key="search_main")
+    search = st.text_input("", placeholder="🔍 ابحث عن اسم نبتة", key="search_main")
 else:
     search = ""
 
