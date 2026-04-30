@@ -19,6 +19,16 @@ favorites = supabase.table("favorites").select("*").execute().data
 fav_ids = [f["plant_id"] for f in favorites]
 
 # ======================
+# SESSION STATE (PAGE + SELECTED PLANT)
+# ======================
+if "page" not in st.session_state:
+    st.session_state["page"] = "home"
+
+if "selected_plant" not in st.session_state:
+    st.session_state["selected_plant"] = None
+
+
+# ======================
 # TOGGLE FAVORITE
 # ======================
 def toggle_favorite(plant_id):
@@ -34,6 +44,7 @@ def toggle_favorite(plant_id):
         }).execute()
         st.toast("❤️ تمت الإضافة")
 
+
 # ======================
 # REFRESH
 # ======================
@@ -44,20 +55,17 @@ def refresh():
 
 
 # ======================
-# SIDEBAR NAVIGATION
+# SIDEBAR
 # ======================
 st.sidebar.title("🌿 Napta")
 
 page = st.sidebar.radio("القائمة", ["🏠 الرئيسية", "❤️ المفضلة"])
 
-# ======================
-# SEARCH
-# ======================
 search = st.sidebar.text_input("🔍 ابحث عن نبتة")
 
 
 # ======================
-# FILTER PLANTS (SEARCH)
+# FILTER
 # ======================
 filtered_plants = plants
 
@@ -66,6 +74,39 @@ if search:
         p for p in plants
         if search.lower() in (p["name_ar"] or p["name"]).lower()
     ]
+
+
+# ======================
+# DETAILS PAGE (NEW 🚀)
+# ======================
+if st.session_state["page"] == "details":
+
+    plant = st.session_state["selected_plant"]
+
+    st.title(f"🌿 {plant['name_ar'] or plant['name']}")
+
+    st.image(plant["image_url"], use_container_width=True)
+
+    st.markdown("## 📝 الوصف")
+    st.write(plant["description"])
+
+    st.markdown("## 💧 طريقة الري")
+    st.write(plant["watering"])
+
+    st.markdown("## 🌞 الإضاءة")
+    st.write(plant["sunlight"])
+
+    st.markdown("## 💡 نصائح العناية")
+    st.write(plant["tips"])
+
+    st.markdown("## 🌍 البيئة المناسبة")
+    st.write(plant["location"])
+
+    if st.button("⬅ رجوع"):
+        st.session_state["page"] = "home"
+        st.rerun()
+
+    st.stop()
 
 
 # ======================
@@ -88,11 +129,18 @@ if page == "🏠 الرئيسية":
             st.write("💧", plant["watering"])
             st.write("🌞", plant["sunlight"])
 
+            # ❤️ favorite
             heart = "❤️" if plant["id"] in fav_ids else "🤍"
 
             if st.button(f"{heart} مفضلة", key="fav_" + plant["id"]):
                 toggle_favorite(plant["id"])
                 refresh()
+                st.rerun()
+
+            # 📖 details button
+            if st.button("📖 تفاصيل العناية", key="det_" + plant["id"]):
+                st.session_state["selected_plant"] = plant
+                st.session_state["page"] = "details"
                 st.rerun()
 
 
