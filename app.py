@@ -232,7 +232,7 @@ def display_plant_card(plant, is_fav_page=False):
 # ======================
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/leaf.png", width=60)
-    st.title("🌿 Napta")
+    st.title("النباتات")
     st.markdown("---")
     
     # Professional buttons in sidebar
