@@ -137,6 +137,10 @@ st.markdown(
         border-color: #4caf50;
         box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
     }
+    /* Remove label from search input */
+    .stTextInput label {
+        display: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -241,7 +245,6 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.caption("✨ اعتني بنباتاتك بحب")
     st.caption("© 2025 Napta")
 
 # ======================
@@ -293,9 +296,9 @@ if st.session_state["page"] == "details":
 # MAIN CONTENT
 # ======================
 
-# Show search bar only on home page
+# Show search bar only on home page (without label)
 if st.session_state["page"] == "home":
-    search = st.text_input("🔍 ابحث عن نبتة", placeholder="اكتب اسم النبتة...", key="search_main")
+    search = st.text_input("", placeholder="🔍 ابحث عن نبتة...", key="search_main")
 else:
     search = ""
 
@@ -313,8 +316,7 @@ if search:
 # HOME PAGE
 # ======================
 if st.session_state["page"] == "home":
-    st.markdown("<h1 style='text-align: right;'>🌿 نبتاتي</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: right; font-size:1.1rem;'>اكتشف نباتاتك واعتنِ بها</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: right;'>🌿 Napta</h1>", unsafe_allow_html=True)
     st.markdown("---")
     
     if not filtered_plants:
@@ -332,7 +334,7 @@ if st.session_state["page"] == "home":
 # FAVORITES PAGE
 # ======================
 if st.session_state["page"] == "favorites":
-    st.markdown("<h1 style='text-align: right;'>❤️ نباتاتي المفضلة</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: right;'>❤️ My Favorite Plants</h1>", unsafe_allow_html=True)
     st.markdown("---")
     
     if not fav_ids:
